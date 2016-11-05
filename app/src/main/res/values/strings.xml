@@ -10,4 +10,7 @@
   <string name="input_hint">FB</string>
   <string name="input_prefill"></string>
   <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+
+  <!--Click this button to add a stock to the watch list-->
+  <string name="add_stock">Add Stock to watch list</string>
 </resources>
