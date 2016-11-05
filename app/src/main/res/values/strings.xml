@@ -1,16 +1,31 @@
 <resources>
-  <string name="app_name">Stock Hawk</string>
+    <!--The title of the app-->
+    <string name="app_name">Stock Hawk</string>
 
-  <string name="action_example">Example action</string>
+    <!--Menu button to access settings-->
+    <string name="action_settings">Settings</string>
 
-  <string name="action_settings">Settings</string>
-  <string name="action_change_units">Change Units</string>
-  <string name="symbol_search">Symbol Search</string>
-  <string name="content_test">Search for a Stock Symbol</string>
-  <string name="input_hint">FB</string>
-  <string name="input_prefill"></string>
-  <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+    <!--Menu button to change stock units-->
+    <string name="action_change_units">Change Units</string>
 
-  <!--Click this button to add a stock to the watch list-->
-  <string name="add_stock">Add Stock to watch list</string>
+    <!--Dialog title for searching a stock symbol-->
+    <string name="symbol_search">Symbol Search</string>
+
+    <!--Dialog content text-->
+    <string name="content_search">Search for a Stock Symbol</string>
+
+    <!--Dialog input hint text-->
+    <string name="input_hint">Stock symbol</string>
+
+    <!--Dialog input prefill text-->
+    <string name="input_prefill"></string>
+
+    <!--No Internet connection message-->
+    <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+
+    <!--Button description for adding a stock to the watch list-->
+    <string name="add_stock">Add Stock to watch list</string>
+
+    <!--Message when adding an existing stock-->
+    <string name="stock_exists">This stock is already saved.</string>
 </resources>
