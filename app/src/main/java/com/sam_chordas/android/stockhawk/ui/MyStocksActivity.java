@@ -21,6 +21,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -44,6 +45,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
 
+    private static final String TAG = "MyStocksActivity";
     private static final int CURSOR_LOADER_ID = 0;
     boolean isConnected;
     /**
@@ -88,9 +90,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
-                        //TODO:
-                        // do something on item click
-                        Toast.makeText(mContext, "Item clicked", Toast.LENGTH_SHORT).show();
+                        TextView symbol = (TextView) v.findViewById(R.id.stock_symbol);
+                        showStockDetail(symbol.getText().toString());
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
@@ -163,6 +164,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    private void showStockDetail(String symbol) {
+        Intent stockDetailIntent = new Intent(this, StockDetailActivity.class);
+        stockDetailIntent.putExtra(StockDetailActivity.EXTRA_STOCK_SYMBOL, symbol);
+        startActivity(stockDetailIntent);
+    }
 
     @Override
     public void onResume() {
