@@ -42,4 +42,7 @@ dependencies {
     // Yahoo finance API
     compile group: 'com.yahoofinance-api', name: 'YahooFinanceAPI', version: '3.5.0'
 
+    // Butterknife - for getting view references easily
+    compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
 }

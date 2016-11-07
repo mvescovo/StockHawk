@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.db.chart.Tools;
@@ -20,6 +21,8 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
@@ -39,26 +42,48 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
     private final String DATE_RANGE_5YEARS = "5YEARS";
     private final String DATE_RANGE_MAX = "MAX";
     private LineChartView mLineChartView;
-    private ProgressBar mProgressBar;
     private String mSymbol;
     private String mDateRange;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar mProgressBar;
+
+    @BindView(R.id.days5)
+    Button mDays5Button;
+
+    @BindView(R.id.months3)
+    Button mMonths3Button;
+
+    @BindView(R.id.months6)
+    Button mMonths6Button;
+
+    @BindView(R.id.years1)
+    Button mYears1Button;
+
+    @BindView(R.id.years5)
+    Button mYears5Button;
+
+    @BindView(R.id.max)
+    Button mMaxButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_detail);
+        ButterKnife.bind(this);
+
         mLineChartView = (LineChartView) findViewById(R.id.linechart);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        findViewById(R.id.days5).setOnClickListener(this);
-        findViewById(R.id.months3).setOnClickListener(this);
-        findViewById(R.id.months6).setOnClickListener(this);
-        findViewById(R.id.years1).setOnClickListener(this);
-        findViewById(R.id.years5).setOnClickListener(this);
-        findViewById(R.id.max).setOnClickListener(this);
+        mDays5Button.setOnClickListener(this);
+        mMonths3Button.setOnClickListener(this);
+        mMonths6Button.setOnClickListener(this);
+        mYears1Button.setOnClickListener(this);
+        mYears5Button.setOnClickListener(this);
+        mMaxButton.setOnClickListener(this);
 
         if (getIntent().getStringExtra(EXTRA_STOCK_SYMBOL) != null) {
             mSymbol = getIntent().getStringExtra(EXTRA_STOCK_SYMBOL);
             mDateRange = DATE_RANGE_5DAYS;
+            mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
             new GetStockData().execute();
         }
     }
@@ -191,24 +216,45 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.days5:
                 mDateRange = DATE_RANGE_5DAYS;
+                unSelectChartButtonColours();
+                mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
             case R.id.months3:
                 mDateRange = DATE_RANGE_3MONTHS;
+                unSelectChartButtonColours();
+                mMonths3Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
             case R.id.months6:
                 mDateRange = DATE_RANGE_6MONTHS;
+                unSelectChartButtonColours();
+                mMonths6Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
             case R.id.years1:
                 mDateRange = DATE_RANGE_1YEAR;
+                unSelectChartButtonColours();
+                mYears1Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
             case R.id.years5:
                 mDateRange = DATE_RANGE_5YEARS;
+                unSelectChartButtonColours();
+                mYears5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
             case R.id.max:
                 mDateRange = DATE_RANGE_MAX;
+                unSelectChartButtonColours();
+                mMaxButton.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
         }
         new GetStockData().execute();
+    }
+
+    private void unSelectChartButtonColours() {
+        mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+        mMonths3Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+        mMonths6Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+        mYears1Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+        mYears5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+        mMaxButton.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
     }
 
     private class GetStockData extends AsyncTask<Void, Void, Stock> {
