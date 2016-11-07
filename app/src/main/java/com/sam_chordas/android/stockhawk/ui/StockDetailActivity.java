@@ -2,19 +2,21 @@ package com.sam_chordas.android.stockhawk.ui;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.db.chart.Tools;
 import com.db.chart.model.LineSet;
+import com.db.chart.renderer.AxisRenderer;
 import com.db.chart.view.LineChartView;
 import com.sam_chordas.android.stockhawk.R;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -23,14 +25,23 @@ import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 
+import static yahoofinance.histquotes.Interval.MONTHLY;
+
 public class
-StockDetailActivity extends AppCompatActivity {
+StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_STOCK_SYMBOL = "STOCK_SYMBOL";
     private static final String TAG = "StockDetailActivity";
+    private final String DATE_RANGE_5DAYS = "5DAYS";
+    private final String DATE_RANGE_3MONTHS = "3MONTHS";
+    private final String DATE_RANGE_6MONTHS = "6MONTHS";
+    private final String DATE_RANGE_1YEAR = "1YEAR";
+    private final String DATE_RANGE_5YEARS = "5YEARS";
+    private final String DATE_RANGE_MAX = "MAX";
     private LineChartView mLineChartView;
     private ProgressBar mProgressBar;
     private String mSymbol;
+    private String mDateRange;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,22 +49,106 @@ StockDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stock_detail);
         mLineChartView = (LineChartView) findViewById(R.id.linechart);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        findViewById(R.id.days5).setOnClickListener(this);
+        findViewById(R.id.months3).setOnClickListener(this);
+        findViewById(R.id.months6).setOnClickListener(this);
+        findViewById(R.id.years1).setOnClickListener(this);
+        findViewById(R.id.years5).setOnClickListener(this);
+        findViewById(R.id.max).setOnClickListener(this);
 
         if (getIntent().getStringExtra(EXTRA_STOCK_SYMBOL) != null) {
             mSymbol = getIntent().getStringExtra(EXTRA_STOCK_SYMBOL);
-            new GetStockData().execute(mSymbol);
+            mDateRange = DATE_RANGE_5DAYS;
+            new GetStockData().execute();
         }
     }
 
-    private void loadChart(String[] labels, float[] values) {
-        LineSet lineset = new LineSet(labels, values);
+    private void loadChart(Calendar[] dates, float[] values) {
+        String[] labels;
+        LineSet lineset;
+        switch (mDateRange) {
+            case DATE_RANGE_5DAYS:
+                labels = new String[5];
+                for (int i = 0; i < dates.length; i++) {
+                    String day = String.valueOf(dates[i].get(Calendar.DAY_OF_MONTH));
+                    labels[i] = day;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+                break;
+            case DATE_RANGE_3MONTHS:
+                labels = new String[3];
+                for (int i = 0; i < dates.length; i++) {
+                    String month = String.valueOf(dates[i].get(Calendar.MONTH));
+                    labels[i] = month;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+                break;
+            case DATE_RANGE_6MONTHS:
+                labels = new String[6];
+                for (int i = 0; i < dates.length; i++) {
+                    String month = String.valueOf(dates[i].get(Calendar.MONTH));
+                    labels[i] = month;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+                break;
+            case DATE_RANGE_1YEAR:
+                labels = new String[12];
+                for (int i = 0; i < dates.length; i++) {
+                    String month = String.valueOf(dates[i].get(Calendar.MONTH));
+                    labels[i] = month;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+                break;
+            case DATE_RANGE_5YEARS:
+                labels = new String[5];
+                float[] yearValues = new float[5];
+                for (int i = 0, j = 0; i < dates.length; i += 12, j++) {
+                    String year = String.valueOf(dates[i].get(Calendar.YEAR));
+                    labels[j] = year;
+                    yearValues[j] = values[i];
+                }
+                values = yearValues;
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+                break;
+            case DATE_RANGE_MAX:
+                labels = new String[dates.length];
+                for (int i = 0; i < dates.length; i++) {
+                    String month = String.valueOf(dates[i].get(Calendar.MONTH));
+                    labels[i] = month;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.NONE);
+                lineset = new LineSet(labels, values);
+                lineset.setDotsRadius(0f);
+                break;
+            default:
+                labels = new String[dates.length];
+                for (int i = 0; i < dates.length; i++) {
+                    String month = String.valueOf(dates[i].get(Calendar.MONTH));
+                    labels[i] = month;
+                }
+                mLineChartView.setXLabels(AxisRenderer.LabelPosition.OUTSIDE);
+                lineset = new LineSet(labels, values);
+        }
         lineset.setColor(ContextCompat.getColor(this, R.color.material_red_700));
         lineset.setDotsColor(ContextCompat.getColor(this, R.color.black));
         lineset.setFill(ContextCompat.getColor(this, R.color.material_red_200));
-        mLineChartView.setYAxis(false);
+        mLineChartView.dismiss();
         mLineChartView.addData(lineset);
-        mLineChartView.setAxisBorderValues((int)Math.floor(getMin(values)),
-                (int)Math.ceil(getMax(values)));
+        int min = (int) Math.floor(getMin(values));
+        while (min % 2 != 0) {
+            min--;
+        }
+        int max = (int) Math.ceil(getMax(values));
+        while (max % 2 != 0) {
+            max++;
+        }
+        int step = Tools.largestDivisor(max - min);
+        mLineChartView.setAxisBorderValues(min, max, step);
         mLineChartView.setPadding(16, 16, 16, 16);
         mLineChartView.setBackgroundColor(ContextCompat.getColor(this, R.color.material_grey_200));
         mLineChartView.show();
@@ -79,7 +174,44 @@ StockDetailActivity extends AppCompatActivity {
         return min;
     }
 
-    private class GetStockData extends AsyncTask<String, Void, ArrayList<Stock>> {
+    private void setProgressIndicator(boolean active) {
+        if (active) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+        }
+    }
+
+    void showNoDataMessage() {
+
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.days5:
+                mDateRange = DATE_RANGE_5DAYS;
+                break;
+            case R.id.months3:
+                mDateRange = DATE_RANGE_3MONTHS;
+                break;
+            case R.id.months6:
+                mDateRange = DATE_RANGE_6MONTHS;
+                break;
+            case R.id.years1:
+                mDateRange = DATE_RANGE_1YEAR;
+                break;
+            case R.id.years5:
+                mDateRange = DATE_RANGE_5YEARS;
+                break;
+            case R.id.max:
+                mDateRange = DATE_RANGE_MAX;
+                break;
+        }
+        new GetStockData().execute();
+    }
+
+    private class GetStockData extends AsyncTask<Void, Void, Stock> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -87,58 +219,67 @@ StockDetailActivity extends AppCompatActivity {
         }
 
         @Override
-        protected ArrayList<Stock> doInBackground(String... strings) {
-            ArrayList<Stock> stocks = new ArrayList<>();
-            for (String symbol : strings) {
-                Calendar from = Calendar.getInstance();
-                Calendar to = Calendar.getInstance();
-                from.add(Calendar.DAY_OF_WEEK, -7);
-
-                Stock stock = null;
-                try {
-                    stock = YahooFinance.get(symbol, from, to, Interval.DAILY);
-                } catch (IOException e) {
-                    e.printStackTrace();
+        protected Stock doInBackground(Void... params) {
+            Stock stock = null;
+            Calendar from = Calendar.getInstance();
+            Calendar to = Calendar.getInstance();
+            try {
+                switch (mDateRange) {
+                    case DATE_RANGE_5DAYS:
+                        from.add(Calendar.DAY_OF_WEEK, -7);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.DAILY);
+                        break;
+                    case DATE_RANGE_3MONTHS:
+                        from.add(Calendar.MONTH, -2);
+                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        break;
+                    case DATE_RANGE_6MONTHS:
+                        from.add(Calendar.MONTH, -5);
+                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        break;
+                    case DATE_RANGE_1YEAR:
+                        from.add(Calendar.MONTH, -11);
+                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        break;
+                    case DATE_RANGE_5YEARS:
+                        from.add(Calendar.MONTH, -59);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.MONTHLY);
+                        break;
+                    case DATE_RANGE_MAX:
+                        from.set(0, 0, 0);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.MONTHLY);
+                        break;
                 }
-
-                if (stock != null) {
-                    stocks.add(stock);
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            return stocks;
+            return stock;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Stock> stocks) {
-            setProgressIndicator(false);
-            for (Stock stock : stocks) {
+        protected void onPostExecute(@Nullable Stock stock) {
+            if (stock == null) {
+                showNoDataMessage();
+            } else {
                 try {
                     List<HistoricalQuote> historicalQuotes = stock.getHistory();
-                    String[] labels = new String[historicalQuotes.size()];
+                    Calendar[] dates = new Calendar[historicalQuotes.size()];
                     float[] values = new float[historicalQuotes.size()];
                     Log.d(TAG, "onPostExecute: history size: " + historicalQuotes.size());
 
                     for (int i = 0; i < historicalQuotes.size(); i++) {
                         Calendar calendar = historicalQuotes.get(i).getDate();
                         BigDecimal high = historicalQuotes.get(i).getHigh();
-                        labels[i] = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                        values[i] = high.floatValue();
-                        Log.d(TAG, "onPostExecute: DAY OF WEEK: " + labels[i] + ", HIGH: " + values[i]);
+                        dates[historicalQuotes.size() - 1 - i] = calendar;
+                        values[historicalQuotes.size() - 1 - i] = high.floatValue();
+                        Log.d(TAG, "onPostExecute: DATE: " + dates[i] + ", HIGH: " + values[i]);
                     }
-
-                    loadChart(labels, values);
+                    loadChart(dates, values);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    private void setProgressIndicator(boolean active) {
-        if (active) {
-            mProgressBar.setVisibility(View.VISIBLE);
-        } else {
-            mProgressBar.setVisibility(View.GONE);
+            setProgressIndicator(false);
         }
     }
 }

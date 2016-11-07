@@ -19,9 +19,59 @@
         android:visibility="gone"/>
 
     <com.db.chart.view.LineChartView
-        xmlns:chart="http://schemas.android.com/apk/res-auto"
         android:id="@+id/linechart"
         android:layout_width="match_parent"
         android:layout_height="100dp"/>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/linechart"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/days5"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/days5"/>
+
+        <Button
+            android:id="@+id/months3"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/months3"/>
+
+        <Button
+            android:id="@+id/months6"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/months6"/>
+
+        <Button
+            android:id="@+id/years1"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/years1"/>
+
+        <Button
+            android:id="@+id/years5"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/years5"/>
+
+        <Button
+            android:id="@+id/max"
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/max"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

@@ -1,4 +1,5 @@
 <resources>
+
     <!--The title of the app-->
     <string name="app_name">Stock Hawk</string>
 
@@ -28,4 +29,13 @@
 
     <!--Message when adding an existing stock-->
     <string name="stock_exists">This stock is already saved.</string>
+
+    <!--Button labels to select date range-->
+    <string name="days5">5D</string>
+    <string name="months3">3M</string>
+    <string name="months6">6M</string>
+    <string name="years1">1Y</string>
+    <string name="years5">5Y</string>
+    <string name="max">MAX</string>
+
 </resources>
