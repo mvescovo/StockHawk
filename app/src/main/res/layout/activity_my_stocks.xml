@@ -25,4 +25,18 @@
         fab:fab_type="normal"
         fab:layout_anchor="recycler_view"
         fab:layout_anchorGravity="bottom|end"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
+
 </FrameLayout>

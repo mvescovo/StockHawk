@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.db.chart.Tools;
 import com.db.chart.model.LineSet;
@@ -48,6 +49,9 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
     @BindView(R.id.progress_bar)
     ProgressBar mProgressBar;
 
+    @BindView(R.id.stock_symbol)
+    TextView mStockSymbol;
+
     @BindView(R.id.days5)
     Button mDays5Button;
 
@@ -82,6 +86,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
         if (getIntent().getStringExtra(EXTRA_STOCK_SYMBOL) != null) {
             mSymbol = getIntent().getStringExtra(EXTRA_STOCK_SYMBOL);
+            mStockSymbol.setText(mSymbol);
             mDateRange = DATE_RANGE_5DAYS;
             mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
             new GetStockData().execute();
@@ -199,7 +204,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
         return min;
     }
 
-    private void setProgressIndicator(boolean active) {
+    protected void setProgressIndicator(boolean active) {
         if (active) {
             mProgressBar.setVisibility(View.VISIBLE);
         } else {

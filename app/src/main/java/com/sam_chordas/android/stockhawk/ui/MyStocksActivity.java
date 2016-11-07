@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -21,6 +22,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +40,14 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import yahoofinance.Stock;
+import yahoofinance.YahooFinance;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -57,10 +67,17 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
+    private String mSymbol;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_my_stocks);
+        ButterKnife.bind(this);
+
         mContext = this;
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -68,7 +85,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
-        setContentView(R.layout.activity_my_stocks);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mServiceIntent = new Intent(this, StockIntentService.class);
@@ -122,10 +138,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                         toast.show();
                                         c.close();
                                     } else {
-                                        // Add the stock to DB
-                                        mServiceIntent.putExtra("tag", "add");
-                                        mServiceIntent.putExtra("symbol", input.toString());
-                                        startService(mServiceIntent);
+                                        // Check if stock exists
+                                        mSymbol = input.toString();
+                                        new GetStockData().execute();
                                     }
                                 }
                             })
@@ -237,4 +252,44 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(null);
     }
 
+    protected void setProgressIndicator(boolean active) {
+        if (active) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+        }
+    }
+
+    private class GetStockData extends AsyncTask<Void, Void, Stock> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            setProgressIndicator(true);
+        }
+
+        @Override
+        protected Stock doInBackground(Void... params) {
+            Stock stock = null;
+            try {
+                stock = YahooFinance.get(mSymbol);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return stock;
+        }
+
+        @Override
+        protected void onPostExecute(Stock stock) {
+            BigDecimal price = stock.getQuote().getPrice();
+            if (price == null) {
+                Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
+            } else {
+                // Add the stock to DB
+                mServiceIntent.putExtra("tag", "add");
+                mServiceIntent.putExtra("symbol", mSymbol);
+                startService(mServiceIntent);
+            }
+            setProgressIndicator(false);
+        }
+    }
 }

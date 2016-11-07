@@ -38,4 +38,7 @@
     <string name="years5">5Y</string>
     <string name="max">MAX</string>
 
+    <!--Toast message for invalid stock-->
+    <string name="invalid_stock">Invalid stock.</string>
+
 </resources>
