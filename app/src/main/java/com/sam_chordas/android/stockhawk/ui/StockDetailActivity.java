@@ -98,7 +98,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
         LineSet lineset;
         switch (mDateRange) {
             case DATE_RANGE_5DAYS:
-                labels = new String[5];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String day = String.valueOf(dates[i].get(Calendar.DAY_OF_MONTH));
                     labels[i] = day;

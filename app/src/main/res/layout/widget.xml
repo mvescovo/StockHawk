@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_title"
+        style="@style/WidgetHeading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"/>
+
+    <FrameLayout
+        style="@style/StockWidget"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/widget_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/widget_empty"
+            style="@style/WidgetEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/empty_stock_list"/>
+
+    </FrameLayout>
+
+</LinearLayout>

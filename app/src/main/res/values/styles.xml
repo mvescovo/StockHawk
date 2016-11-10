@@ -23,4 +23,30 @@
         <item name="android:textAllCaps">true</item>
     </style>
 
+    <!--Widget-->
+    <style name="StockWidget" parent="AppTheme">
+        <item name="android:background">@color/local_material_grey_800</item>
+    </style>
+
+    <style name="WidgetBidPriceTextStyle" parent="BidPriceTextStyle">
+        <item name="android:textColor">@color/material_grey_400</item>
+    </style>
+
+    <style name="WidgetStockSymbolTextStyle" parent="StockSymbolTextStyle">
+        <item name="android:textColor">@color/material_grey_400</item>
+    </style>
+
+    <style name="WidgetHeading">
+        <item name="android:textSize">20sp</item>
+        <item name="android:padding">@dimen/widget_margin</item>
+        <item name="android:background">@color/material_blue_500</item>
+        <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="WidgetEmpty" parent="StockWidget">
+        <item name="android:padding">@dimen/widget_margin</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/material_grey_400</item>
+    </style>
+
 </resources>

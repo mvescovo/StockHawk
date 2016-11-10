@@ -46,6 +46,25 @@
 
         <activity android:name=".ui.StockDetailActivity">
         </activity>
+
+        <receiver android:name=".widget.StockWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="com.sam_chordas.android.stockhawk.DATA_UPDATED"/>
+                <action android:name="com.sam_chordas.android.stockhawk.ITEM_CLICKED"/>
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider"/>
+        </receiver>
+
+        <service
+            android:name=".widget.WidgetListService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS">
+        </service>
     </application>
 
 </manifest>
