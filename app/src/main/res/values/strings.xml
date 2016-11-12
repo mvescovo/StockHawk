@@ -23,6 +23,7 @@
 
     <!--No Internet connection message-->
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+    <string name="network_snackbar">No network, data may not be up to date.</string>
 
     <!--Button description for adding a stock to the watch list-->
     <string name="add_stock">Add Stock to watch list</string>
@@ -41,8 +42,8 @@
     <!--Toast message for invalid stock-->
     <string name="invalid_stock">Invalid stock.</string>
 
-    <!--Stock list is empty message-->
-    <string name="empty_stock_list">No Stock Information Available</string>
+    <!--Stock data empty message-->
+    <string name="empty_stock_data">No Stock Information Available.</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

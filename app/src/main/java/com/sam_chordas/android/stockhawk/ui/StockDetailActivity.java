@@ -1,21 +1,30 @@
 package com.sam_chordas.android.stockhawk.ui;
 
+import android.content.Context;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.db.chart.Tools;
 import com.db.chart.model.LineSet;
 import com.db.chart.renderer.AxisRenderer;
 import com.db.chart.view.LineChartView;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.util.NetworkReceiver;
+import com.sam_chordas.android.stockhawk.util.Util;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -32,7 +41,8 @@ import yahoofinance.histquotes.Interval;
 import static yahoofinance.histquotes.Interval.MONTHLY;
 
 public class
-StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
+StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String EXTRA_STOCK_SYMBOL = "STOCK_SYMBOL";
     private static final String TAG = "StockDetailActivity";
@@ -45,6 +55,9 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
     private LineChartView mLineChartView;
     private String mSymbol;
     private String mDateRange;
+    private NetworkReceiver mNetworkReceiver;
+    boolean isConnected;
+    private Snackbar mSnackbar;
 
     @BindView(R.id.progress_bar)
     ProgressBar mProgressBar;
@@ -91,6 +104,43 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
             mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
             new GetStockData().execute();
         }
+
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        mSnackbar = Util.networkSnackbar(this, isConnected, mSnackbar, findViewById(android.R.id.content));
+
+        // Register BroadcastReceiver to track connection changes.
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        mNetworkReceiver = new NetworkReceiver();
+        this.registerReceiver(mNetworkReceiver, filter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mNetworkReceiver != null) {
+            this.unregisterReceiver(mNetworkReceiver);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPref.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPref.registerOnSharedPreferenceChangeListener(this);
     }
 
     private void loadChart(Calendar[] dates, float[] values) {
@@ -213,7 +263,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
     }
 
     void showNoDataMessage() {
-
+        Toast.makeText(this, getString(R.string.empty_stock_data), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -260,6 +310,14 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
         mYears1Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
         mYears5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
         mMaxButton.setBackgroundColor(ContextCompat.getColor(this, R.color.black));
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if (s.contentEquals("connected")) {
+            isConnected = sharedPreferences.getBoolean(s, true);
+            Util.networkSnackbar(this, isConnected, mSnackbar, null);
+        }
     }
 
     private class GetStockData extends AsyncTask<Void, Void, Stock> {
@@ -316,14 +374,12 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener {
                     List<HistoricalQuote> historicalQuotes = stock.getHistory();
                     Calendar[] dates = new Calendar[historicalQuotes.size()];
                     float[] values = new float[historicalQuotes.size()];
-                    Log.d(TAG, "onPostExecute: history size: " + historicalQuotes.size());
 
                     for (int i = 0; i < historicalQuotes.size(); i++) {
                         Calendar calendar = historicalQuotes.get(i).getDate();
                         BigDecimal high = historicalQuotes.get(i).getHigh();
                         dates[historicalQuotes.size() - 1 - i] = calendar;
                         values[historicalQuotes.size() - 1 - i] = high.floatValue();
-                        Log.d(TAG, "onPostExecute: DATE: " + dates[i] + ", HIGH: " + values[i]);
                     }
                     loadChart(dates, values);
                 } catch (IOException e) {
