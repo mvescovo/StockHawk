@@ -268,6 +268,11 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
 
     @Override
     public void onClick(View view) {
+        selectChartButton(view);
+        new GetStockData().execute();
+    }
+
+    private void selectChartButton(View view) {
         switch (view.getId()) {
             case R.id.days5:
                 mDateRange = DATE_RANGE_5DAYS;
@@ -300,7 +305,6 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 mMaxButton.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
                 break;
         }
-        new GetStockData().execute();
     }
 
     private void unSelectChartButtonColours() {
@@ -368,6 +372,8 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
         @Override
         protected void onPostExecute(@Nullable Stock stock) {
             if (stock == null) {
+                unSelectChartButtonColours();
+                mLineChartView.dismiss();
                 showNoDataMessage();
             } else {
                 try {
