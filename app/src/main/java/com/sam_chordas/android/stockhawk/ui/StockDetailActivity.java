@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -37,8 +38,6 @@ import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
-
-import static yahoofinance.histquotes.Interval.MONTHLY;
 
 public class
 StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
@@ -176,7 +175,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset = new LineSet(labels, values);
                 break;
             case DATE_RANGE_3MONTHS:
-                labels = new String[3];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String month = String.valueOf(dates[i].get(Calendar.MONTH));
                     labels[i] = month;
@@ -185,7 +184,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset = new LineSet(labels, values);
                 break;
             case DATE_RANGE_6MONTHS:
-                labels = new String[6];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String month = String.valueOf(dates[i].get(Calendar.MONTH));
                     labels[i] = month;
@@ -194,7 +193,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset = new LineSet(labels, values);
                 break;
             case DATE_RANGE_1YEAR:
-                labels = new String[12];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String month = String.valueOf(dates[i].get(Calendar.MONTH));
                     labels[i] = month;
@@ -203,8 +202,8 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset = new LineSet(labels, values);
                 break;
             case DATE_RANGE_5YEARS:
-                labels = new String[5];
-                float[] yearValues = new float[5];
+                labels = new String[10];
+                float[] yearValues = new float[10];
                 for (int i = 0, j = 0; i < dates.length; i += 12, j++) {
                     String year = String.valueOf(dates[i].get(Calendar.YEAR));
                     labels[j] = year;
@@ -215,7 +214,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset = new LineSet(labels, values);
                 break;
             case DATE_RANGE_MAX:
-                labels = new String[dates.length];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String month = String.valueOf(dates[i].get(Calendar.MONTH));
                     labels[i] = month;
@@ -225,7 +224,7 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                 lineset.setDotsRadius(0f);
                 break;
             default:
-                labels = new String[dates.length];
+                labels = new String[values.length];
                 for (int i = 0; i < dates.length; i++) {
                     String month = String.valueOf(dates[i].get(Calendar.MONTH));
                     labels[i] = month;
@@ -364,15 +363,15 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                         break;
                     case DATE_RANGE_3MONTHS:
                         from.add(Calendar.MONTH, -2);
-                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.MONTHLY);
                         break;
                     case DATE_RANGE_6MONTHS:
                         from.add(Calendar.MONTH, -5);
-                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.MONTHLY);
                         break;
                     case DATE_RANGE_1YEAR:
                         from.add(Calendar.MONTH, -11);
-                        stock = YahooFinance.get(mSymbol, from, to, MONTHLY);
+                        stock = YahooFinance.get(mSymbol, from, to, Interval.MONTHLY);
                         break;
                     case DATE_RANGE_5YEARS:
                         from.add(Calendar.MONTH, -59);
@@ -398,14 +397,20 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
             } else {
                 try {
                     List<HistoricalQuote> historicalQuotes = stock.getHistory();
-                    Calendar[] dates = new Calendar[historicalQuotes.size()];
-                    float[] values = new float[historicalQuotes.size()];
+                    Calendar[] dates = new Calendar[historicalQuotes.size() * 2];
+                    float[] values = new float[historicalQuotes.size() * 2];
 
-                    for (int i = 0; i < historicalQuotes.size(); i++) {
+                    Log.d(TAG, "onPostExecute: DATES SIZE: " + dates.length);
+
+                    for (int i = 0, j = 0; i < historicalQuotes.size(); i++, j += 2) {
                         Calendar calendar = historicalQuotes.get(i).getDate();
-                        BigDecimal high = historicalQuotes.get(i).getHigh();
-                        dates[historicalQuotes.size() - 1 - i] = calendar;
-                        values[historicalQuotes.size() - 1 - i] = high.floatValue();
+                        BigDecimal open = historicalQuotes.get(i).getOpen();
+                        BigDecimal close = historicalQuotes.get(i).getClose();
+
+                        dates[dates.length - 1 - j] = calendar;
+                        dates[dates.length - 1 - j - 1] = calendar;
+                        values[values.length - 1 - j] = close.floatValue();
+                        values[values.length - 1 - j - 1] = open.floatValue();
                     }
                     loadChart(dates, values);
                 } catch (IOException e) {
