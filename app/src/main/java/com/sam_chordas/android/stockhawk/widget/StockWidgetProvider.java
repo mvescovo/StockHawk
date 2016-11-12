@@ -10,8 +10,13 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 import com.sam_chordas.android.stockhawk.ui.StockDetailActivity;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /**
  * @author Michael Vescovo.
@@ -33,6 +38,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
                     new ComponentName(context, getClass()));
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
+            showUpdateTime(context, appWidgetManager, appWidgetIds);
         }
 
         if (intent.getAction().equals(ACTION_ITEM_CLICKED)) {
@@ -50,6 +56,12 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
         for (int appWidgetId : appWidgetIds) {
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
+
+            // Setup refresh button
+            Intent updateDataService = new Intent(context, StockIntentService.class);
+            updateDataService.putExtra("tag", "periodic");
+            PendingIntent updateDataPendingIntent = PendingIntent.getService(context, 0, updateDataService, 0);
+            rv.setOnClickPendingIntent(R.id.refresh, updateDataPendingIntent);
 
             // WidgetListService intent for populating collection views.
             Intent collectionIntent = new Intent(context, WidgetListService.class);
@@ -70,6 +82,24 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
             appWidgetManager.updateAppWidget(appWidgetId, rv);
         }
+
+        showUpdateTime(context, appWidgetManager, appWidgetIds);
+
+    }
+
+    /*
+    * Show the time data was updated on the widget.
+    * */
+    private void showUpdateTime(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        for (int appWidgetId : appWidgetIds) {
+            RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
+            Calendar c = Calendar.getInstance();
+            DateFormat timeInstance = SimpleDateFormat.getTimeInstance(DateFormat.SHORT);
+            String timeUpdated = "Updated " + timeInstance.format(c.getTime());
+            rv.setTextViewText(R.id.time_updated, timeUpdated);
+            appWidgetManager.updateAppWidget(appWidgetId, rv);
+        }
+
     }
 
     @Override

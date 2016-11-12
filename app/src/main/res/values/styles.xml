@@ -37,10 +37,24 @@
     </style>
 
     <style name="WidgetHeading">
+        <item name="android:background">@color/material_blue_500</item>
+    </style>
+
+    <style name="WidgetTitle">
         <item name="android:textSize">20sp</item>
         <item name="android:padding">@dimen/widget_margin</item>
-        <item name="android:background">@color/material_blue_500</item>
         <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="WidgetUpdated">
+        <item name="android:textSize">12sp</item>
+        <item name="android:padding">@dimen/widget_margin</item>
+        <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="WidgetRefreshButton">
+        <item name="android:background">@color/material_blue_500</item>
+        <item name="android:padding">@dimen/widget_margin</item>
     </style>
 
     <style name="WidgetEmpty" parent="StockWidget">

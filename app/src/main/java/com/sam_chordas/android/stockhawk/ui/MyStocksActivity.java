@@ -45,6 +45,7 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
+import com.sam_chordas.android.stockhawk.util.AlarmReceiver;
 import com.sam_chordas.android.stockhawk.util.NetworkReceiver;
 import com.sam_chordas.android.stockhawk.util.Util;
 
@@ -79,6 +80,7 @@ public class MyStocksActivity extends AppCompatActivity
     private String mSymbol;
     private NetworkReceiver mNetworkReceiver;
     private Snackbar mSnackbar;
+    AlarmReceiver mAlarm = new AlarmReceiver();
 
     @BindView(R.id.progress_bar)
     ProgressBar mProgressBar;
@@ -248,23 +250,32 @@ public class MyStocksActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        if (id == R.id.action_change_units) {
-            // this is for changing stock changes from percent value to dollar value
-            Utils.showPercent = !Utils.showPercent;
-            this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+        switch (id) {
+            case R.id.action_change_units:
+                // this is for changing stock changes from percent value to dollar value
+                Utils.showPercent = !Utils.showPercent;
+                this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+                return true;
+            case R.id.refresh_data:
+                refreshData();
+                return true;
+            case R.id.start_alarm:
+                mAlarm.setAlarm(this);
+                return true;
+            case R.id.cancel_alarm:
+                mAlarm.cancelAlarm(this);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void refreshData() {
+        Intent updateDataService = new Intent(this, StockIntentService.class);
+        updateDataService.putExtra("tag", "periodic");
+        startService(updateDataService);
     }
 
     @Override

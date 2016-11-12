@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Binder;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -39,18 +38,12 @@ public class WidgetListService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            Log.d(TAG, "onDataSetChanged: CALLED");
-
             final long identityToken = Binder.clearCallingIdentity();
 
             if (mData != null) {
                 mCount = mData.getCount();
-                Log.d(TAG, "onDataSetChanged: COUNT at start of method: " + mCount);
-                Log.d(TAG, "onDataSetChanged: data is not null");
                 mData.close();
                 mData = null;
-            } else {
-                Log.d(TAG, "onDataSetChanged: data is null");
             }
 
             String[] projection = {
@@ -73,18 +66,13 @@ public class WidgetListService extends RemoteViewsService {
             Binder.restoreCallingIdentity(identityToken);
 
             mCount = mData.getCount();
-            Log.d(TAG, "onDataSetChanged: COUNT at end of method: " + mCount);
         }
 
         @Override
         public void onDestroy() {
-            Log.d(TAG, "onDestroy: called");
             if (mData != null) {
-                Log.d(TAG, "onDestroy: data is not null");
                 mData.close();
                 mData = null;
-            } else {
-                Log.d(TAG, "onDestroy: data is null");
             }
         }
 
