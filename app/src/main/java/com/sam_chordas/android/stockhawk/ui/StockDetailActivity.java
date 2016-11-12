@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -399,8 +398,6 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
                     List<HistoricalQuote> historicalQuotes = stock.getHistory();
                     Calendar[] dates = new Calendar[historicalQuotes.size() * 2];
                     float[] values = new float[historicalQuotes.size() * 2];
-
-                    Log.d(TAG, "onPostExecute: DATES SIZE: " + dates.length);
 
                     for (int i = 0, j = 0; i < historicalQuotes.size(); i++, j += 2) {
                         Calendar calendar = historicalQuotes.get(i).getDate();

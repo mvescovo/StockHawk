@@ -59,7 +59,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
 
             // Setup refresh button
             Intent updateDataService = new Intent(context, StockIntentService.class);
-            updateDataService.putExtra("tag", "periodic");
+            updateDataService.putExtra("tag", "init");
             PendingIntent updateDataPendingIntent = PendingIntent.getService(context, 0, updateDataService, 0);
             rv.setOnClickPendingIntent(R.id.refresh, updateDataPendingIntent);
 
@@ -95,7 +95,7 @@ public class StockWidgetProvider extends AppWidgetProvider {
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
             Calendar c = Calendar.getInstance();
             DateFormat timeInstance = SimpleDateFormat.getTimeInstance(DateFormat.SHORT);
-            String timeUpdated = "Updated " + timeInstance.format(c.getTime());
+            String timeUpdated = context.getString(R.string.time_updated) + timeInstance.format(c.getTime());
             rv.setTextViewText(R.id.time_updated, timeUpdated);
             appWidgetManager.updateAppWidget(appWidgetId, rv);
         }

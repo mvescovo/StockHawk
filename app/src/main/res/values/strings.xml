@@ -52,4 +52,7 @@
     <!--Refresh data-->
     <string name="refresh_data">Refresh</string>
 
+    <!--Show the time data was updated-->
+    <string name="time_updated">Updated&#160;</string>
+
 </resources>
