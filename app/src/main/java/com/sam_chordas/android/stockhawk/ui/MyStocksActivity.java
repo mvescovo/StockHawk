@@ -80,7 +80,7 @@ public class MyStocksActivity extends AppCompatActivity
     private String mSymbol;
     private NetworkReceiver mNetworkReceiver;
     private Snackbar mSnackbar;
-    AlarmReceiver mAlarm = new AlarmReceiver();
+    private AlarmReceiver mAlarm = new AlarmReceiver();
 
     @BindView(R.id.progress_bar)
     ProgressBar mProgressBar;
