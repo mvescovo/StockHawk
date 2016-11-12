@@ -45,6 +45,8 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String EXTRA_STOCK_SYMBOL = "STOCK_SYMBOL";
+    public static final String EXTRA_DATE_RANGE = "DATE_RANGE";
+    public static final String EXTRA_DATE_SELECTED_CHART_ID = "SELECTED_CHART_ID";
     private static final String TAG = "StockDetailActivity";
     private final String DATE_RANGE_5DAYS = "5DAYS";
     private final String DATE_RANGE_3MONTHS = "3MONTHS";
@@ -52,9 +54,9 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
     private final String DATE_RANGE_1YEAR = "1YEAR";
     private final String DATE_RANGE_5YEARS = "5YEARS";
     private final String DATE_RANGE_MAX = "MAX";
-    private LineChartView mLineChartView;
     private String mSymbol;
     private String mDateRange;
+    private int mSelectedChartId;
     private NetworkReceiver mNetworkReceiver;
     boolean isConnected;
     private Snackbar mSnackbar;
@@ -64,6 +66,9 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
 
     @BindView(R.id.stock_symbol)
     TextView mStockSymbol;
+
+    @BindView(R.id.linechart)
+    LineChartView mLineChartView;
 
     @BindView(R.id.days5)
     Button mDays5Button;
@@ -89,7 +94,6 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
         setContentView(R.layout.activity_stock_detail);
         ButterKnife.bind(this);
 
-        mLineChartView = (LineChartView) findViewById(R.id.linechart);
         mDays5Button.setOnClickListener(this);
         mMonths3Button.setOnClickListener(this);
         mMonths6Button.setOnClickListener(this);
@@ -101,7 +105,15 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
             mSymbol = getIntent().getStringExtra(EXTRA_STOCK_SYMBOL);
             mStockSymbol.setText(mSymbol);
             mDateRange = DATE_RANGE_5DAYS;
-            mDays5Button.setBackgroundColor(ContextCompat.getColor(this, R.color.material_red_700));
+            mSelectedChartId = mDays5Button.getId();
+            if (savedInstanceState != null) {
+                if ((savedInstanceState.getString(EXTRA_DATE_RANGE) != null)
+                        && (savedInstanceState.getInt(EXTRA_DATE_SELECTED_CHART_ID) != 0)) {
+                    mDateRange = savedInstanceState.getString(EXTRA_DATE_RANGE);
+                    mSelectedChartId = savedInstanceState.getInt(EXTRA_DATE_SELECTED_CHART_ID);
+                }
+            }
+            selectChartButton();
             new GetStockData().execute();
         }
 
@@ -125,6 +137,13 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
         if (mNetworkReceiver != null) {
             this.unregisterReceiver(mNetworkReceiver);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(EXTRA_DATE_RANGE, mDateRange);
+        outState.putInt(EXTRA_DATE_SELECTED_CHART_ID, mSelectedChartId);
     }
 
     @Override
@@ -268,12 +287,13 @@ StockDetailActivity extends AppCompatActivity implements View.OnClickListener,
 
     @Override
     public void onClick(View view) {
-        selectChartButton(view);
+        mSelectedChartId = view.getId();
+        selectChartButton();
         new GetStockData().execute();
     }
 
-    private void selectChartButton(View view) {
-        switch (view.getId()) {
+    private void selectChartButton() {
+        switch (mSelectedChartId) {
             case R.id.days5:
                 mDateRange = DATE_RANGE_5DAYS;
                 unSelectChartButtonColours();
