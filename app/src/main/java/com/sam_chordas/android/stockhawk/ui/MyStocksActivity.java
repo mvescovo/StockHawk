@@ -23,7 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -309,24 +308,31 @@ public class MyStocksActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         EditText editText = (EditText) dialog.getDialog().findViewById(R.id.add_stock_input);
-        String input = editText.getText().toString().toUpperCase();
+        final String input = editText.getText().toString().toUpperCase();
         if (input.matches("[A-Z]*")) {
-            // On FAB click, receive user input. Make sure the stock doesn't already exist
-            // in the DB and proceed accordingly
-            Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                    new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                    new String[]{input}, null);
-            if (c != null && c.getCount() != 0) {
-                Toast toast = Toast.makeText(MyStocksActivity.this, R.string.stock_exists,
-                        Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-                toast.show();
-                c.close();
-            } else {
-                // Check if stock exists
-                mSymbol = input;
-                new GetStockData().execute();
-            }
+            // Make sure the stock doesn't already exist in the DB and proceed accordingly
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                            new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
+                            new String[]{input}, null);
+                    if (c != null && c.getCount() != 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mContext, getString(R.string.stock_exists),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        c.close();
+                    } else {
+                        // Check if stock exists
+                        mSymbol = input;
+                        new GetStockData().execute();
+                    }
+                }
+            }).start();
         } else {
             displayInvalidStockToast();
         }
