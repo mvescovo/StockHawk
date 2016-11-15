@@ -13,26 +13,25 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.text.InputType;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -59,7 +58,8 @@ import yahoofinance.YahooFinance;
 
 public class MyStocksActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        SharedPreferences.OnSharedPreferenceChangeListener,
+        StockInputDialog.StockInputDialogListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -68,6 +68,10 @@ public class MyStocksActivity extends AppCompatActivity
     private static final String TAG = "MyStocksActivity";
     private static final int CURSOR_LOADER_ID = 0;
     boolean isConnected;
+    @BindView(R.id.progress_bar)
+    ProgressBar mProgressBar;
+    @BindView(R.id.coordinator_layout)
+    CoordinatorLayout mCoordinatorLayout;
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -81,12 +85,7 @@ public class MyStocksActivity extends AppCompatActivity
     private NetworkReceiver mNetworkReceiver;
     private Snackbar mSnackbar;
     private AlarmReceiver mAlarm = new AlarmReceiver();
-
-    @BindView(R.id.progress_bar)
-    ProgressBar mProgressBar;
-
-    @BindView(R.id.coordinator_layout)
-    CoordinatorLayout mCoordinatorLayout;
+    private EditText mStockSymbolInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,33 +131,19 @@ public class MyStocksActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (isConnected) {
-                    new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
-                            .content(R.string.content_search)
-                            .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
-                                @Override
-                                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                                    // On FAB click, receive user input. Make sure the stock doesn't already exist
-                                    // in the DB and proceed accordingly
-                                    Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                                            new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                                            new String[]{input.toString()}, null);
-                                    if (c != null && c.getCount() != 0) {
-                                        Toast toast =
-                                                Toast.makeText(MyStocksActivity.this, R.string.stock_exists,
-                                                        Toast.LENGTH_LONG);
-                                        toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-                                        toast.show();
-                                        c.close();
-                                    } else {
-                                        // Check if stock exists
-                                        mSymbol = input.toString();
-                                        new GetStockData().execute();
-                                    }
-                                }
-                            })
-                            .contentColor(ContextCompat.getColor(getApplicationContext(), R.color.black))
-                            .show();
+                    showStockInputDialog();
+
+//                    MaterialDialog dialog = new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
+//                            .content(R.string.content_search)
+//                            .inputType(InputType.TYPE_CLASS_TEXT)
+//                            .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
+//                                @Override
+//                                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+//
+//                                }
+//                            })
+//                            .contentColor(ContextCompat.getColor(getApplicationContext(), R.color.black))
+//                            .show();
                 } else {
                     networkToast();
                 }
@@ -195,6 +180,11 @@ public class MyStocksActivity extends AppCompatActivity
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         mNetworkReceiver = new NetworkReceiver();
         this.registerReceiver(mNetworkReceiver, filter);
+    }
+
+    public void showStockInputDialog() {
+        DialogFragment dialog = new StockInputDialog();
+        dialog.show(getSupportFragmentManager(), "StockInputDialogFragment");
     }
 
     @Override
@@ -316,6 +306,34 @@ public class MyStocksActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        EditText editText = (EditText) dialog.getDialog().findViewById(R.id.add_stock_input);
+        String input = editText.getText().toString().toUpperCase();
+
+        // On FAB click, receive user input. Make sure the stock doesn't already exist
+        // in the DB and proceed accordingly
+        Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
+                new String[]{input}, null);
+        if (c != null && c.getCount() != 0) {
+            Toast toast = Toast.makeText(MyStocksActivity.this, R.string.stock_exists,
+                    Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
+            toast.show();
+            c.close();
+        } else {
+            // Check if stock exists
+            mSymbol = input;
+            new GetStockData().execute();
+        }
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+
+    }
+
     private class GetStockData extends AsyncTask<Void, Void, Stock> {
         @Override
         protected void onPreExecute() {
@@ -335,15 +353,19 @@ public class MyStocksActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(Stock stock) {
-            BigDecimal price = stock.getQuote().getPrice();
-            if (price == null) {
-                Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
+        protected void onPostExecute(@Nullable Stock stock) {
+            if (stock != null) {
+                BigDecimal price = stock.getQuote().getPrice();
+                if (price == null) {
+                    Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
+                } else {
+                    // Add the stock to DB
+                    mServiceIntent.putExtra("tag", "add");
+                    mServiceIntent.putExtra("symbol", mSymbol);
+                    startService(mServiceIntent);
+                }
             } else {
-                // Add the stock to DB
-                mServiceIntent.putExtra("tag", "add");
-                mServiceIntent.putExtra("symbol", mSymbol);
-                startService(mServiceIntent);
+                Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
             }
             setProgressIndicator(false);
         }

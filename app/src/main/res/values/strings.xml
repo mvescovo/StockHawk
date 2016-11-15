@@ -55,4 +55,13 @@
     <!--Show the time data was updated-->
     <string name="time_updated">Updated&#160;</string>
 
+    <!--Enter a stock symbol-->
+    <string name="stock_hint">Stock Symbol</string>
+
+    <!--Positive button to add a stock-->
+    <string name="add_stock_button">Add</string>
+
+    <!--Negative button when canceling adding a stock-->
+    <string name="cancel_stock_button">Cancel</string>
+
 </resources>

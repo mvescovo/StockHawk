@@ -25,14 +25,9 @@ repositories {
 }
 
 dependencies {
-
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.7@aar') {
-        transitive = true
-    }
-
     // Google support libraries
-    compile 'com.android.support:support-v4:25.0.0'
-    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:support-v4:25.0.1'
+    compile 'com.android.support:design:25.0.1'
 
     // Charts to display stock history
     compile 'com.diogobernardino:williamchart:2.3.0'
