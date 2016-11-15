@@ -310,28 +310,35 @@ public class MyStocksActivity extends AppCompatActivity
     public void onDialogPositiveClick(DialogFragment dialog) {
         EditText editText = (EditText) dialog.getDialog().findViewById(R.id.add_stock_input);
         String input = editText.getText().toString().toUpperCase();
-
-        // On FAB click, receive user input. Make sure the stock doesn't already exist
-        // in the DB and proceed accordingly
-        Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                new String[]{input}, null);
-        if (c != null && c.getCount() != 0) {
-            Toast toast = Toast.makeText(MyStocksActivity.this, R.string.stock_exists,
-                    Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-            toast.show();
-            c.close();
+        if (input.matches("[A-Z]*")) {
+            // On FAB click, receive user input. Make sure the stock doesn't already exist
+            // in the DB and proceed accordingly
+            Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                    new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
+                    new String[]{input}, null);
+            if (c != null && c.getCount() != 0) {
+                Toast toast = Toast.makeText(MyStocksActivity.this, R.string.stock_exists,
+                        Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
+                toast.show();
+                c.close();
+            } else {
+                // Check if stock exists
+                mSymbol = input;
+                new GetStockData().execute();
+            }
         } else {
-            // Check if stock exists
-            mSymbol = input;
-            new GetStockData().execute();
+            displayInvalidStockToast();
         }
     }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
 
+    }
+
+    private void displayInvalidStockToast() {
+        Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
     }
 
     private class GetStockData extends AsyncTask<Void, Void, Stock> {
@@ -357,7 +364,7 @@ public class MyStocksActivity extends AppCompatActivity
             if (stock != null) {
                 BigDecimal price = stock.getQuote().getPrice();
                 if (price == null) {
-                    Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
+                    displayInvalidStockToast();
                 } else {
                     // Add the stock to DB
                     mServiceIntent.putExtra("tag", "add");
@@ -365,7 +372,7 @@ public class MyStocksActivity extends AppCompatActivity
                     startService(mServiceIntent);
                 }
             } else {
-                Toast.makeText(mContext, getString(R.string.invalid_stock), Toast.LENGTH_SHORT).show();
+                displayInvalidStockToast();
             }
             setProgressIndicator(false);
         }
