@@ -4,7 +4,7 @@ An Android app to view stock prices. Add new stocks, view history, interact with
 # Screenshots
 The widget:
 
-<img src="https://raw.githubusercontent.com/mvescovo/StockHawk/master/Stock_Hawk_ori_portrait.png" height="250" width="500">
+<img src="https://raw.githubusercontent.com/mvescovo/StockHawk/master/Stock_Hawk_ori_portrait2.png" height="250" width="500">
 
 # Install
 Android Studio was used to build the app and is recommended.
